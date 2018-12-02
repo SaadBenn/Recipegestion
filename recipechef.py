@@ -29,3 +29,36 @@ class RecipeChef:
                            output['channel']
         return None, None
 
+    def post_to_slack(self, response, channel):
+        """
+        :param response: the response by the bot
+        :param channel: the channel to which the response will be posted to
+        """
+        self.slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
+
+    def make_formatted_steps(self, recipe_info, recipe_steps):
+        response = "Ok, it takes *" + str(recipe_info['readyInMinutes']) +\
+                   "* minutes to make *" + str(recipe_info['servings']) + "* servings of *" +\
+                    recipe_info['title'] + "*. Here are the steps:\n\n"
+
+        if recipe_steps and recipe_steps[0]['steps']:
+            for i, r_step in enumerate(recipe_steps[0]['steps']):
+                equip_str = ''
+                for e in r_step['equipment']:
+                    equip_str += e['name'] + ", "
+                    if not equip_str:
+                        equip_str = 'None'
+                    else:
+                        equip_str = equip_str[:-2]
+
+                    response += '*Step ' + str(i+1) + '*:\n' + '_Equipment_: ' + equip_str + '\n' + '_Action_: ' +\
+                        r_step['step'] + '\n\n'
+
+
+        else:
+            response += '_No instructions available for this recipe._\n\n'
+
+        response += '*Say anything to me to start over...*'
+        return response
+        
+
