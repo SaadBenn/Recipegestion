@@ -61,6 +61,10 @@ class RecipeChef:
         return response
 
     def handle_ingredients_message(self, message):
+        """
+        param message: the user message
+        :return: the corresponding ingredients for the recipe
+        """
         if self.context['get_recipes']:
             self.context['recipes'] = self.recipe_client.find_by_ingredients(message)
 
@@ -71,3 +75,17 @@ class RecipeChef:
         response += '\nPlease enter the corresponding number of your choice.'
 
         return response
+
+    def handle_cuisine_message(self, cuisine):
+        if self.context['get_recipes']:
+            self.context['recipes'] = self.recipe_client.find_by_cuisine(cuisine)
+
+        response = 'Let\s see here.. \n' + 'I\'ve found these recipes: \n'
+
+        for i, recipe in enumerate(self.context['recipes']):
+            response += str(i+1) + '. ' + recipe['title'] + '\n'
+        response += '\nPlease enter the corresponding number of your choice.'
+
+        return response
+
+    
