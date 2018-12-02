@@ -37,9 +37,9 @@ class RecipeChef:
         self.slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
 
     def make_formatted_steps(self, recipe_info, recipe_steps):
-        response = "Ok, it takes *" + str(recipe_info['readyInMinutes']) +\
-                   "* minutes to make *" + str(recipe_info['servings']) + "* servings of *" +\
-                    recipe_info['title'] + "*. Here are the steps:\n\n"
+        response = "Ok, it takes *" + str(recipe_info['readyInMinutes']) + \
+                   "* minutes to make *" + str(recipe_info['servings']) + "* servings of *" + \
+                   recipe_info['title'] + "*. Here are the steps:\n\n"
 
         if recipe_steps and recipe_steps[0]['steps']:
             for i, r_step in enumerate(recipe_steps[0]['steps']):
@@ -51,14 +51,23 @@ class RecipeChef:
                     else:
                         equip_str = equip_str[:-2]
 
-                    response += '*Step ' + str(i+1) + '*:\n' + '_Equipment_: ' + equip_str + '\n' + '_Action_: ' +\
-                        r_step['step'] + '\n\n'
-
+                    response += '*Step ' + str(i + 1) + '*:\n' + '_Equipment_: ' + equip_str + '\n' + '_Action_: ' + \
+                                r_step['step'] + '\n\n'
 
         else:
             response += '_No instructions available for this recipe._\n\n'
 
         response += '*Say anything to me to start over...*'
         return response
-        
 
+    def handle_ingredients_message(self, message):
+        if self.context['get_recipes']:
+            self.context['recipes'] = self.recipe_client.find_by_ingredients(message)
+
+        response = 'Let\'s see here... \n' + 'I\'ve found these recipes: \n'
+
+        for i, recipe in enumerate(self.context['recipes']):
+            response += str(i + 1) + '. ' + recipe['title'] + '\n'
+        response += '\nPlease enter the corresponding number of your choice.'
+
+        return response
