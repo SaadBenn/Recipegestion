@@ -88,4 +88,46 @@ class RecipeChef:
 
         return response
 
-    
+    def handle_selection_message(self, selection):
+        """
+        :param selection: the number selected
+        :return: the formatted response
+        """
+        recipe_id = self.context['recipes'][selection-1]['id']
+        recipe_info = self.recipe_client.get_info_by_id(recipe_id)
+        recipe_steps = self.recipe_client.get_steps_by_id(recipe_id)
+
+        return self.make_formatted_steps(recipe_info, recipe_steps)
+
+    def handle_message(self, message, channel):
+        watson_response = self.conversation_client.message(
+            workspace_id= self.workspace_id,
+            message_input={'text': message},
+            context=self.context
+        )
+
+        self.context = watson_response['context']
+
+        if 'is_ingredients' in self.context.keys() and self.context['is_ingredients']:
+            response = self.handle_ingredients_message(message)
+        elif 'is_selection' in self.context.keys() and self.context['is_selection']:
+            self.context['selection_valid'] = False
+            response = 'Invalid selection ' + 'Say something to see your choices again...'
+
+            if self.context['selection'].isdigit():
+                selection = int(self.context['selection'])
+                if 1 <= selection <= 5:
+                    self.context['selection_valid'] = True
+                    response = self.handle_selection_message(selection)
+        elif watson_response['entities'] and watson_response['entities'][0]['entity'] == 'cuisine':
+            cuisine = watson_response['entities'][0]['value']
+            response = self.handle_cuisine_message(cuisine)
+
+        else:
+            response = ''
+            for text in watson_response['output']['text']:
+                response += text + '\n'
+
+        self.post_to_slack(response, channel)
+
+        
