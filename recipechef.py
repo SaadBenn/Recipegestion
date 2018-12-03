@@ -130,4 +130,14 @@ class RecipeChef:
 
         self.post_to_slack(response, channel)
 
-        
+    def run(self):
+        if self.slack_client.rtm_connect():
+            print('recipe_chef is connecting and running!')
+            while True:
+                slack_output = self.slack_client.rtm_read()
+                message, channel = self.parse_slack_output(slack_output)
+                if message and channel:
+                    self.handle_message(message, channel)
+                time.sleep(self.delay)
+        else:
+            print('Connection failed due to invalid Slack token or bot ID?')
