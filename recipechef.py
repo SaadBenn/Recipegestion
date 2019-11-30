@@ -15,7 +15,7 @@ class RecipeChef:
 
         self.at_bot = "<@" + bot_id + ">:"
         self.delay = 0.5  # second
-        self.workspace_id = '93054028-2b0b-4b21-9bc1-ec8c48970dbb'
+        self.workspace_id = 'workspace_id'
 
         self.context = {}
 
